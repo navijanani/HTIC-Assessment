@@ -9,8 +9,6 @@ from filters import (
 
 
 EPSILON = 1e-6
-
-
 def load_image(path, max_width=500):
     """
     Load grayscale image and resize for manual convolution.
@@ -72,9 +70,9 @@ def process_grayscale(
     Complete grayscale illumination correction pipeline.
     """
 
-    # ----------------------------------------------
+    
     # Load image
-    # ----------------------------------------------
+   
 
     image = load_image(
         input_path
@@ -86,27 +84,24 @@ def process_grayscale(
     )
 
 
-    # ----------------------------------------------
-    # Normalize
-    # ----------------------------------------------
+   
+    # Normalize the image
+   
 
     image_normalized = normalize_image(
         image
     )
 
 
-    # ----------------------------------------------
-    # Log transformation
-    # ----------------------------------------------
+    
+    # Log transformation in normalized image
+    
 
     log_image = log_transform(
         image_normalized
     )
 
 
-    # ----------------------------------------------
-    # Create Gaussian kernel manually
-    # ----------------------------------------------
 
     kernel = create_gaussian_kernel(
         size=kernel_size,
@@ -124,9 +119,8 @@ def process_grayscale(
     )
 
 
-    # ----------------------------------------------
-    # Estimate illumination
-    # ----------------------------------------------
+    # Estimate illumination -low frequency
+    
 
     print(
         "Estimating illumination..."
@@ -138,9 +132,9 @@ def process_grayscale(
     )
 
 
-    # ----------------------------------------------
-    # Estimate reflectance
-    # ----------------------------------------------
+  
+    # Estimate reflectance-high frequency
+    
 
     log_reflectance = (
         log_image
@@ -158,9 +152,9 @@ def process_grayscale(
     )
 
 
-    # ----------------------------------------------
+   
     # Normalize results
-    # ----------------------------------------------
+  
 
     illumination_display = (
         normalize_for_display(
@@ -175,9 +169,7 @@ def process_grayscale(
     )
 
 
-    # ----------------------------------------------
-    # Save individual results
-    # ----------------------------------------------
+   
 
     output_dir.mkdir(
         parents=True,
@@ -206,9 +198,9 @@ def process_grayscale(
     )
 
 
-    # ----------------------------------------------
+   
     # Comparison figure
-    # ----------------------------------------------
+  
 
     plt.figure(
         figsize=(16, 4)
