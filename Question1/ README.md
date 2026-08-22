@@ -265,6 +265,12 @@ For example:
 data/raw/uneven_texture.png
 ```
 
+The grayscale pipeline uses `uneven_texture.png`. The RGB pipeline uses the separate color image:
+
+```text
+data/raw/uneven_texture_color.png
+```
+
 Then run:
 
 ```bash
@@ -306,7 +312,7 @@ The RGB experiment also saves the following files under `results/color/`:
 * `original_rgb.png` — original RGB input.
 * `log_image_red.png`, `log_image_green.png`, `log_image_blue.png` — log-domain channel views.
 * `channel_illumination_red.png`, `channel_illumination_green.png`, `channel_illumination_blue.png` — per-channel illumination views.
-* `joint_illumination.png` — shared spatial illumination estimate.
+* `joint-illumination.png` — shared spatial illumination estimate.
 * `log_reflectance_red.png`, `log_reflectance_green.png`, `log_reflectance_blue.png` — log-reflectance channel views.
 * `corrected_rgb.png` — final corrected RGB image.
 * `ratio_error.png` — visual diagnostic of RGB ratio error.
@@ -314,7 +320,7 @@ The RGB experiment also saves the following files under `results/color/`:
 
 ### Observed RGB result
 
-The method was tested using `data/raw/uneven_texture.png`, a textured image with uneven illumination. With the default 51 × 51 Gaussian kernel and sigma 10.0, the saved joint illumination ranged from approximately `0.069` to `2.530`, showing substantial spatial brightness variation. Dividing by this field reduces the uneven illumination while retaining the texture.
+The method was tested using `data/raw/uneven_texture_color.png`, a textured color image with uneven illumination. With the default 51 × 51 Gaussian kernel and sigma 10.0, the saved joint illumination ranged from approximately `0.188` to `5.479`, showing substantial spatial brightness variation. Dividing by this field reduces the uneven illumination while retaining the texture.
 
 The maximum measured normalized RGB-ratio error was approximately `1.7e-16`. This is floating-point roundoff, so no visible change to the true per-pixel RGB color ratios was introduced.
 

@@ -47,7 +47,7 @@ GRAYSCALE_INPUT = (
 
 COLOR_INPUT = (
     RAW_DIR
-    / "uneven_texture.png"
+    / "uneven_texture_color.png"
 )
 
 

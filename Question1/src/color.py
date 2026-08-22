@@ -67,8 +67,8 @@ def process_color(input_path, output_dir, kernel_size=51, sigma=10.0):
 			kernel
 		)
 
-	# Channel means represent the light's spectral color; the centered part
-	# represents the shared spatial shading used for the correction.
+	# Channel means provide channel-dependent offsets for the assumed
+	# spectral component; the centered part represents shared spatial shading.
 	spectral_offsets = log_channel_illumination.mean(axis=(0, 1))
 	centered_log_illumination = (
 		log_channel_illumination - spectral_offsets
@@ -76,21 +76,16 @@ def process_color(input_path, output_dir, kernel_size=51, sigma=10.0):
 	log_joint_illumination = centered_log_illumination.mean(axis=2)
 	joint_illumination = np.exp(log_joint_illumination)
 	log_reflectance = log_image - log_joint_illumination[:, :, None]
-	corrected = image / (joint_illumination[:, :, None] + EPSILON)
+	corrected = image / joint_illumination[:, :, None]
 
-	np.save(output_dir / "log_image.npy", log_image)
-	np.save(output_dir / "channel_log_illumination.npy", log_channel_illumination)
 	np.save(output_dir / "joint_illumination.npy", joint_illumination)
 	np.save(output_dir / "log_reflectance.npy", log_reflectance)
 	np.save(output_dir / "corrected_rgb.npy", corrected)
 	np.save(output_dir / "spectral_offsets.npy", spectral_offsets)
 
-	save_channel_images(log_image, output_dir, "log_image")
-	save_channel_images(log_channel_illumination, output_dir, "channel_illumination")
-	save_channel_images(log_reflectance, output_dir, "log_reflectance")
-
+	
 	plt.imsave(
-		output_dir / "joint_illumination.png",
+		output_dir / "joint-illumination.png",
 		normalize_for_display(joint_illumination),
 		cmap="gray"
 	)
@@ -103,9 +98,30 @@ def process_color(input_path, output_dir, kernel_size=51, sigma=10.0):
 		image
 	)
 
-	input_ratios = image / image.sum(axis=2, keepdims=True)
-	corrected_ratios = corrected / corrected.sum(axis=2, keepdims=True)
-	ratio_error = np.abs(input_ratios - corrected_ratios).max(axis=2)
+	channel_sum = image.sum(axis=2)
+	valid_pixels = channel_sum > EPSILON
+
+	input_ratios = np.zeros_like(image)
+	input_ratios[valid_pixels] = (
+		image[valid_pixels]
+		/ channel_sum[valid_pixels, None]
+	)
+
+	corrected_sum = corrected.sum(axis=2)
+	corrected_ratios = np.zeros_like(corrected)
+	corrected_ratios[valid_pixels] = (
+		corrected[valid_pixels]
+		/ corrected_sum[valid_pixels, None]
+	)
+
+	ratio_error = np.zeros_like(channel_sum)
+	ratio_error[valid_pixels] = np.max(
+		np.abs(
+			input_ratios[valid_pixels]
+			- corrected_ratios[valid_pixels]
+		),
+		axis=1
+	)
 	plt.imsave(
 		output_dir / "ratio_error.png",
 		np.clip(ratio_error * 100000.0, 0.0, 1.0),
@@ -114,12 +130,17 @@ def process_color(input_path, output_dir, kernel_size=51, sigma=10.0):
 
 	print("Color image shape:", image.shape)
 	print("Joint illumination range:", joint_illumination.min(), joint_illumination.max())
-	print("Maximum RGB ratio error:", ratio_error.max())
+	if np.any(valid_pixels):
+		print(
+			"Maximum RGB ratio error:",
+			ratio_error[valid_pixels].max()
+		)
+	else:
+		print("Maximum RGB ratio error: no valid color pixels")
 
 	return {
 		"image": image,
-		"joint_illumination": joint_illumination,
-		"log_reflectance": log_reflectance,
+		
 		"corrected": corrected,
 		"ratio_error": ratio_error
 	}
