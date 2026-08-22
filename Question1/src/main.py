@@ -1,5 +1,6 @@
 from pathlib import Path
 
+from color import process_color
 from grayscale import process_grayscale
 
 
@@ -44,6 +45,11 @@ GRAYSCALE_INPUT = (
     / "uneven_texture.png"
 )
 
+COLOR_INPUT = (
+    RAW_DIR
+    / "uneven_texture.png"
+)
+
 
 
 # OUTPUT DIRECTORIES
@@ -52,6 +58,11 @@ GRAYSCALE_INPUT = (
 GRAYSCALE_RESULTS = (
     RESULTS_DIR
     / "grayscale"
+)
+
+COLOR_RESULTS = (
+    RESULTS_DIR
+    / "color"
 )
 
 
@@ -88,6 +99,11 @@ def main():
         exist_ok=True
     )
 
+    COLOR_RESULTS.mkdir(
+        parents=True,
+        exist_ok=True
+    )
+
     process_grayscale(
         input_path=GRAYSCALE_INPUT,
         output_dir=GRAYSCALE_RESULTS,
@@ -97,6 +113,23 @@ def main():
 
     print(
         "Grayscale processing completed."
+    )
+
+    if not COLOR_INPUT.exists():
+        raise FileNotFoundError(
+            f"Color image not found: "
+            f"{COLOR_INPUT}"
+        )
+
+    process_color(
+        input_path=COLOR_INPUT,
+        output_dir=COLOR_RESULTS,
+        kernel_size=51,
+        sigma=10.0
+    )
+
+    print(
+        "Color processing completed."
     )
 
 

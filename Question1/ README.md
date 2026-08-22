@@ -79,9 +79,54 @@ The filtering operation will be implemented manually rather than using a built-i
 
 ### Part 3 — Color Image Extension
 
-The grayscale approach will subsequently be extended to RGB images.
+The grayscale approach has been extended to RGB images in `src/color.py`.
 
-The color implementation will consider illumination variation across the red, green, and blue channels while attempting to preserve the true color relationships between channels.
+For each color channel `c` in `{R, G, B}`, the image formation model is:
+
+```text
+I_c(x, y) = R_c(x, y) × L_c(x, y)
+```
+
+Taking logarithms gives:
+
+```text
+log(I_c) = log(R_c) + log(L_c)
+```
+
+The implementation applies the existing manually generated Gaussian kernel and manual convolution independently to the red, green, and blue log channels. The low-frequency result is the channel illumination estimate.
+
+### Joint illumination model
+
+The three channel estimates can contain two different effects:
+
+* A channel-wide offset describes the spectral color of the light.
+* A spatially varying component describes the shared brightness or shading pattern.
+
+The mean low-frequency log illumination is calculated for each channel and treated as its spectral offset. These offsets are removed before averaging the channels to form one shared spatial illumination field:
+
+```text
+log(L_shared) = mean_c(log(L_c) - spectral_offset_c)
+```
+
+The final corrected RGB image is calculated from the original normalized RGB values:
+
+```text
+corrected_c(x, y) = I_c(x, y) / L_shared(x, y)
+```
+
+Using the same divisor for all three channels preserves the true color ratios exactly:
+
+```text
+corrected_R / corrected_G = I_R / I_G
+corrected_G / corrected_B = I_G / I_B
+corrected_R / corrected_B = I_R / I_B
+```
+
+The original values are used for reconstruction instead of exponentiating the epsilon-stabilized log image. This prevents the small logarithm stabilizer from changing ratios at dark pixels.
+
+### RGB assumptions
+
+The assignment does not prescribe a unique RGB decomposition. This implementation assumes that illumination has a channel-dependent global spectral component and a common spatial component. It therefore removes uneven spatial brightness while preserving color ratios. It does not remove arbitrary spatially varying color casts, because changing those casts would also change the original RGB ratios.
 
 ---
 
@@ -157,6 +202,35 @@ Exponentiation
 Estimated Reflectance
 ```
 
+For RGB processing, the channel-specific low-frequency estimates are combined after spectral-offset removal:
+
+```text
+RGB Input
+     │
+     ▼
+Normalize each channel
+     │
+     ▼
+Log transform each channel
+     │
+     ▼
+Manual Gaussian convolution per channel
+     │
+     ├──────────────► Channel illumination estimates
+     │                         │
+     │                         ▼
+     │                  Remove spectral offsets
+     │                         │
+     │                         ▼
+     │                  Shared illumination field
+     │
+     ▼
+Divide every original channel by the shared field
+     │
+     ▼
+Corrected RGB image with preserved color ratios
+```
+
 ---
 
 ## Dependencies
@@ -227,6 +301,23 @@ The experiment will produce and compare:
 * Estimated log-reflectance
 * Reconstructed reflectance
 
+The RGB experiment also saves the following files under `results/color/`:
+
+* `original_rgb.png` — original RGB input.
+* `log_image_red.png`, `log_image_green.png`, `log_image_blue.png` — log-domain channel views.
+* `channel_illumination_red.png`, `channel_illumination_green.png`, `channel_illumination_blue.png` — per-channel illumination views.
+* `joint_illumination.png` — shared spatial illumination estimate.
+* `log_reflectance_red.png`, `log_reflectance_green.png`, `log_reflectance_blue.png` — log-reflectance channel views.
+* `corrected_rgb.png` — final corrected RGB image.
+* `ratio_error.png` — visual diagnostic of RGB ratio error.
+* `.npy` files — full-precision arrays for the log image, illumination estimates, reflectance, corrected image, and spectral offsets.
+
+### Observed RGB result
+
+The method was tested using `data/raw/uneven_texture.png`, a textured image with uneven illumination. With the default 51 × 51 Gaussian kernel and sigma 10.0, the saved joint illumination ranged from approximately `0.069` to `2.530`, showing substantial spatial brightness variation. Dividing by this field reduces the uneven illumination while retaining the texture.
+
+The maximum measured normalized RGB-ratio error was approximately `1.7e-16`. This is floating-point roundoff, so no visible change to the true per-pixel RGB color ratios was introduced.
+
 The results will be used to evaluate whether uneven illumination has been reduced while preserving the underlying texture.
 
 ---
@@ -235,4 +326,4 @@ The results will be used to evaluate whether uneven illumination has been reduce
 
 This repository is being developed incrementally. The implementation and experiments will be documented as the project progresses.
 
-The solution is intended to demonstrate the reasoning behind the image-processing approach rather than relying on a single black-box image-enhancement operation.
+The solution is intended to demonstrate the reasoning behind the image-processing approach rather than relying on a single black-box image-enhancement operation. Both the Gaussian kernel and convolution are implemented manually; OpenCV, SciPy, and built-in blur/filter functions are not used.
