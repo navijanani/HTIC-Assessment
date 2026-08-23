@@ -1,39 +1,39 @@
 {
   "all_valid_correspondences": {
     "number_of_correspondences": 70,
-    "mean_residual_x": 8.506997825499402,
-    "mean_residual_y": -4.346463323342268,
-    "mean_absolute_residual_x": 16.242631988582502,
-    "mean_absolute_residual_y": 6.057544917927038,
-    "mean_residual_magnitude": 18.007012141095966,
-    "median_residual_magnitude": 12.820511483579239,
-    "rmse_reprojection_error": 22.090428021175192,
-    "maximum_residual_magnitude": 57.572861728439676,
-    "minimum_residual_magnitude": 3.4888730149603315
+    "mean_residual_x": 0.41414104716319733,
+    "mean_residual_y": -0.0022085418648844423,
+    "mean_absolute_residual_x": 1.7300692012253973,
+    "mean_absolute_residual_y": 1.0930389807834469,
+    "mean_residual_magnitude": 2.1698940325902,
+    "median_residual_magnitude": 1.0050652617626603,
+    "rmse_reprojection_error": 3.4074052632679535,
+    "maximum_residual_magnitude": 11.971159652678496,
+    "minimum_residual_magnitude": 0.009953718096460826
   },
   "main_final_reprojection_error": "rmse_reprojection_error on RANSAC inliers",
   "ransac_inliers": {
     "number_of_correspondences": 30,
-    "mean_residual_x": 8.368161598742159,
-    "mean_residual_y": -4.609767741592325,
-    "mean_absolute_residual_x": 8.368161598742159,
-    "mean_absolute_residual_y": 4.745661759064567,
-    "mean_residual_magnitude": 10.144046566742361,
-    "median_residual_magnitude": 9.575730058170388,
-    "rmse_reprojection_error": 10.583494792695927,
-    "maximum_residual_magnitude": 16.96797991070453,
-    "minimum_residual_magnitude": 5.755399771952955
+    "mean_residual_x": -3.9214758847568496e-10,
+    "mean_residual_y": -3.8195745825457074e-10,
+    "mean_absolute_residual_x": 0.2456482006651754,
+    "mean_absolute_residual_y": 0.3061466905384009,
+    "mean_residual_magnitude": 0.425650326870514,
+    "median_residual_magnitude": 0.3491096992241427,
+    "rmse_reprojection_error": 0.5037415192297277,
+    "maximum_residual_magnitude": 1.0711098747052903,
+    "minimum_residual_magnitude": 0.009953718096460826
   },
   "ransac_outliers": {
     "number_of_correspondences": 40,
-    "mean_residual_x": 8.611124995567334,
-    "mean_residual_y": -4.148985009654725,
-    "mean_absolute_residual_x": 22.148484780962754,
-    "mean_absolute_residual_y": 7.041457287073892,
-    "mean_residual_magnitude": 23.90423632186117,
-    "median_residual_magnitude": 23.874313773595546,
-    "rmse_reprojection_error": 27.74832420629212,
-    "maximum_residual_magnitude": 57.572861728439676,
-    "minimum_residual_magnitude": 3.4888730149603315
+    "mean_residual_x": 0.724746832829706,
+    "mean_residual_y": -0.0038649479770796803,
+    "mean_absolute_residual_x": 2.8433849516455636,
+    "mean_absolute_residual_y": 1.6832081984672314,
+    "mean_residual_magnitude": 3.4780768118799634,
+    "median_residual_magnitude": 2.232088215037556,
+    "rmse_reprojection_error": 4.486413039456895,
+    "maximum_residual_magnitude": 11.971159652678496,
+    "minimum_residual_magnitude": 0.27424718895330247
   }
 }

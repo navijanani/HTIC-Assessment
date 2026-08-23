@@ -8,7 +8,7 @@ statistics.
 from __future__ import annotations
 
 import numpy as np
-from scipy.optimize import minimize
+from scipy.optimize import least_squares
 from scipy.spatial.transform import Rotation
 
 from .distortion_model import project_points
@@ -320,7 +320,6 @@ def optimize_parameters(
 	if initial.shape != (12,) or not np.all(np.isfinite(initial)):
 		raise ValueError("initial_theta must be a finite vector with 12 values")
 	initial_cost = cost_from_theta(initial, world, observed, delta)
-	invalid_cost = 1e100
 	if image_size is None:
 		image_width = max(float(np.ptp(observed[:, 0])), 1.0)
 		image_height = max(float(np.ptp(observed[:, 1])), 1.0)
@@ -348,21 +347,59 @@ def optimize_parameters(
 		raise ValueError("initial_theta lies outside the physically safe parameter bounds")
 	_validate_candidate(initial, world, (int(image_width), int(image_height)))
 
-	def objective(theta: np.ndarray) -> float:
+	def stable_residual_vector(theta: np.ndarray) -> np.ndarray:
+		"""Return smooth finite residuals for least-squares trial parameters."""
+		values = np.asarray(theta, dtype=float)
 		try:
-			_validate_candidate(theta, world, (int(image_width), int(image_height)))
-			return cost_from_theta(theta, world, observed, delta)
-		except (ValueError, FloatingPointError):
-			return invalid_cost
+			intrinsic, rotation, translation, k1, k2 = unpack_theta(values)
+			from .distortion_model import world_to_camera
 
-	result = minimize(
-		objective,
+			camera = world_to_camera(world, rotation, translation)
+			depths = camera[:, 2]
+			depth_scale = max(world_scale, 1.0)
+			depth_barrier = np.logaddexp(0.0, -depths / depth_scale)
+			if np.any(depths <= 0):
+				return np.concatenate((np.full(2 * len(world), 100.0), depth_barrier, np.zeros(len(world))))
+			normalized = camera[:, :2] / depths[:, None]
+			radius_squared = np.sum(normalized**2, axis=1)
+			distortion_scale = 1.0 + k1 * radius_squared + k2 * radius_squared**2
+			if not np.all(np.isfinite(distortion_scale)):
+				return np.full(2 * len(world) + 2 * len(world), 100.0)
+			predicted = project_points(world, intrinsic, rotation, translation, k1, k2)
+			if not np.all(np.isfinite(predicted)):
+				return np.full(2 * len(world) + 2 * len(world), 100.0)
+			residuals = observed - predicted
+			magnitudes = np.linalg.norm(residuals, axis=1)
+			loss = huber_loss(magnitudes, delta)
+			weights = np.sqrt(loss / np.maximum(magnitudes**2, 1e-24))
+			robust_residuals = (residuals * weights[:, None]).reshape(-1)
+			outside_x = np.maximum(0.0, np.abs(predicted[:, 0] - image_width / 2.0) - image_width / 2.0)
+			outside_y = np.maximum(0.0, np.abs(predicted[:, 1] - image_height / 2.0) - image_height / 2.0)
+			domain_barrier = (outside_x + outside_y) / max(image_scale, 1.0)
+			return np.concatenate((robust_residuals, depth_barrier * 0.01, domain_barrier * 0.01))
+		except (ValueError, FloatingPointError, OverflowError):
+			return np.full(2 * len(world) + len(world) + len(world), 100.0)
+
+	result = least_squares(
+		stable_residual_vector,
 		initial,
-		method="L-BFGS-B",
-		bounds=parameter_bounds,
-		options={"maxiter": max_iterations, "ftol": 1e-12, "gtol": 1e-8},
+		bounds=(
+			np.array([bound[0] for bound in parameter_bounds]),
+			np.array([bound[1] for bound in parameter_bounds]),
+		),
+		method="trf",
+		x_scale="jac",
+		loss="linear",
+		max_nfev=max_iterations,
+		ftol=1e-12,
+		xtol=1e-12,
+		gtol=1e-10,
 	)
-	final_cost = objective(result.x)
+	_validate_candidate(result.x, world, (int(image_width), int(image_height)))
+	final_cost = cost_from_theta(result.x, world, observed, delta)
+	if not final_cost < initial_cost:
+		result.success = False
+		result.message = "Optimization did not reduce the robust reprojection cost"
 	return result.x, result, float(initial_cost), float(final_cost)
 
 
@@ -406,7 +443,14 @@ def synthetic_optimization_example() -> tuple[np.ndarray, object, float, float]:
 	initial_theta = true_theta + np.array(
 		[-45.0, 35.0, 12.0, -10.0, 0.002, -0.0002, 0.01, 0.01, -0.01, 0.2, -0.2, 0.5]
 	)
-	return optimize_parameters(world, observed, initial_theta, delta=3.0, max_iterations=300)
+	return optimize_parameters(
+		world,
+		observed,
+		initial_theta,
+		delta=3.0,
+		max_iterations=300,
+		image_size=(1200, 900),
+	)
 
 
 if __name__ == "__main__":
