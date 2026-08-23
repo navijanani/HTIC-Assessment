@@ -1,338 +1,152 @@
-# Q3 — Aksharantar Character-Level Seq2Seq
+# Q3: Aksharantar Hindi Transliteration
 
-## Project Goal
-
-The objective of this project is to build a character-level sequence-to-sequence model that converts a Romanized Hindi word into its corresponding Devanagari form.
+This project implements character-level transliteration from Romanized Hindi to Devanagari using PyTorch.
 
 Example:
 
 ```text
-Input:  ghar
-Output: घर
+shastragaar -> शस्त्रागार
 ```
 
-The model will use an encoder-decoder architecture with character embeddings and a configurable recurrent neural network.
+## Dataset
 
----
+The raw Aksharantar Hindi files are headerless two-column CSV files:
 
-# Step 1 — Project Setup
+| Column | Meaning |
+| --- | --- |
+| 1 | Romanized input |
+| 2 | Devanagari target |
 
-## Objective
+The original files in `data/raw/` are never modified.
 
-Create a clean project structure before implementing the neural network.
+| Split | Rows |
+| --- | ---: |
+| Train | 51,200 |
+| Validation | 4,096 |
+| Test | 4,096 |
 
-Current structure:
+`src/dataset.py` inspects the splits and defines the PyTorch Dataset. Source and target strings are encoded separately. Target sequences receive `<SOS>` and `<EOS>` markers. Samples remain variable-length; `collate_pairs()` pads only when forming a batch.
+
+## Vocabulary
+
+`src/vocabulary.py` builds separate source and target character vocabularies from the training split only. Both contain `<PAD>`, `<SOS>`, `<EOS>`, and `<UNK>`. Validation and test data are not used to create the mappings.
+
+| Vocabulary | Size |
+| --- | ---: |
+| Source | 30 |
+| Target | 68 |
+
+## Model
 
 ```text
-Q3-aksharantar-seq2seq/
-│
-├── data/
-│   ├── raw/
-│   │   ├── hin_train.csv
-│   │   ├── hin_valid.csv
-│   │   └── hin_test.csv
-│   │
-│   └── processed/
-│
-├── src/
-│   ├── __init__.py
-│   ├── config.py
-│   ├── dataset.py
-│   ├── vocabulary.py
-│   ├── encoder.py
-│   ├── decoder.py
-│   ├── seq2seq.py
-│   ├── train.py
-│   ├── evaluate.py
-│   └── utils.py
-│
-├── notebooks/
-│   └── q3_experiments.ipynb
-│
-├── checkpoints/
-│
-├── results/
-│   ├── predictions/
-│   └── figures/
-│
-├── README.md
-├── requirements.txt
-└── .gitignore
+Romanized IDs -> embedding -> Encoder -> Decoder -> Devanagari logits
 ```
 
-The original CSV files are kept inside `data/raw/` and should not be modified.
+- `src/encoder.py` encodes the padded Romanized sequence.
+- `src/decoder.py` generates one target character at a time.
+- `src/seq2seq.py` connects both modules, starts decoding with `<SOS>`, and supports teacher forcing.
+- The recurrent cell is configurable as `RNN`, `GRU`, or `LSTM`.
+- LSTM carries both hidden and cell states.
 
-The purpose of the directories is to keep data, source code, experiments, trained models, and generated results separate.
+Current settings are `E=128`, `H=256`, one encoder layer, and one decoder layer. Other hyperparameters are centralized in `src/config.py`.
 
----
+## Training
 
-# Step 2 — Inspect the Dataset
+`src/train.py` builds train and validation DataLoaders, uses cross-entropy with the target `<PAD>` ID as `ignore_index`, and saves the best validation checkpoint to `checkpoints/best_model.pt`.
 
-## Objective
+```bash
+python3 -m src.train
+```
 
-Understand the actual structure of the Aksharantar Hindi data before performing preprocessing.
+A one-epoch smoke test is available without changing the normal configuration:
 
-The project uses three files:
+```bash
+python3 -c "from src.train import run_training_smoke_test; run_training_smoke_test()"
+```
+
+## Test Evaluation
+
+`src/evaluate.py` builds vocabularies from training data, loads the best checkpoint, and evaluates only `hin_test.csv`. Generation is autoregressive, starts with `<SOS>`, and stops at `<EOS>` or a maximum length.
+
+```bash
+python3 -m src.evaluate
+```
+
+Predictions are written to `results/predictions/test_predictions.csv`.
+
+## Complexity Analysis
+
+`src/complexity.py` counts multiply-accumulate operations (MACs). The convention includes encoder and decoder recurrent matrix multiplications and the decoder output projection. It excludes embedding lookups, biases, activations, padding, and control flow.
 
 ```text
-hin_train.csv
-hin_valid.csv
-hin_test.csv
+C = 2*T*G*(E*H + H*H) + T*H*V
 ```
 
-They represent:
+Here, `G=1` for RNN, `G=3` for GRU, and `G=4` for LSTM. With `E=128`, `H=256`, `T=21`, and `V=68`:
 
-* training examples
-* validation examples
-* test examples
+| Cell | Computation |
+| --- | ---: |
+| RNN | 4,494,336 MACs |
+| GRU | 12,751,872 MACs |
+| LSTM | 16,880,640 MACs |
 
-Each example contains a Romanized form and its corresponding Devanagari form.
+## Parameter Analysis
 
-Example:
+### Assignment theoretical count
+
+The assignment formula assumes one common vocabulary size `V`. Using the requested `V=68`:
 
 ```text
-Romanized       Devanagari
-shastragaar     शस्त्रागार
+P = V*E + 2*G*(E*H + H*H + H) + H*V + V
 ```
 
-### Checks to perform
+### Actual implementation count
 
-Before creating the model, we will inspect:
-
-1. Number of examples in each split.
-2. Column names.
-3. A few sample rows.
-4. Missing values.
-5. Duplicate pairs.
-6. Character composition of both columns.
-7. Minimum and maximum word lengths.
-8. Whether unexpected characters are present.
-
-### Important rule
-
-The three dataset splits should remain separate.
-
-The training set will be used to learn the model.
-
-The validation set will be used to monitor model performance while developing the system.
-
-The test set will be reserved for the final evaluation.
-
----
-
-# Step 3 — Build Character Vocabularies
-
-## Objective
-
-Convert characters into integer IDs so that they can be processed by PyTorch.
-
-A neural network cannot directly consume a string such as:
+The implementation uses separate vocabularies: source vocabulary size `Vs=30` for the encoder embedding and target vocabulary size `Vt=68` for the decoder output embedding and projection. Its corresponding formula is:
 
 ```text
-ghar
+P = Vs*E + Vt*E + 2*G*(E*H + H*H + H) + H*Vt + Vt
 ```
 
-Therefore, every character needs an integer representation.
+The table keeps the theoretical values from the assignment-style formula and compares them with the actual PyTorch model. The project settings are `E=128`, `H=256`, `V=68`, `Vs=30`, and `Vt=68`:
 
-For example:
+| Cell | Theoretical parameters | Actual PyTorch parameters |
+| --- | ---: | ---: |
+| RNN | 218,436 | 227,652 |
+| GRU | 612,676 | 622,916 |
+| LSTM | 809,796 | 820,548 |
+
+Actual values use:
+
+```python
+sum(parameter.numel() for parameter in model.parameters())
+```
+
+The difference from the simplified theoretical count comes from separate source and target embeddings and PyTorch recurrent-layer bias tensors.
+
+## RNN, GRU, and LSTM Experiment
+
+`src/experiment.py` trains each cell type with the same data and configuration, selects the best validation state, evaluates it on the same test set, and records runtime. Results are saved to `results/experiments.csv`.
+
+| Cell | Parameters | Best validation loss | Test character accuracy | Training time (seconds) |
+| --- | ---: | ---: | ---: | ---: |
+| RNN | 227,652 | 2.9964 | 0.1266 | 225.18 |
+| GRU | 622,916 | 1.1321 | 0.6135 | 530.37 |
+| LSTM | 820,548 | 1.0963 | 0.6422 | 827.23 |
+
+Run the comparison with:
+
+```bash
+python3 -m src.experiment
+```
+
+Character accuracy is positional: matching characters are counted against the longer of the target and prediction strings, so insertions and deletions count as mismatches.
+
+## Project Structure
 
 ```text
-g → 12
-h → 7
-a → 3
-r → 18
+data/raw/       Original Aksharantar CSV files
+src/            Dataset, vocabulary, model, training, evaluation, and analysis code
+checkpoints/    Saved best model
+results/        Predictions and experiment results
 ```
-
-The exact IDs will be generated from the vocabulary rather than manually assigned.
-
-## Separate vocabularies
-
-We will maintain two vocabularies.
-
-### Source vocabulary
-
-This represents characters appearing in the Romanized input.
-
-```text
-Romanized character
-        ↓
-      ID
-```
-
-### Target vocabulary
-
-This represents characters appearing in the Devanagari output.
-
-```text
-Devanagari character
-        ↓
-      ID
-```
-
-Keeping them separate makes the encoder and decoder vocabularies independent.
-
-## Special symbols
-
-The target sequence needs markers that tell the decoder when generation starts and ends.
-
-We will use:
-
-```text
-<PAD>   Padding
-<SOS>   Start of sequence
-<EOS>   End of sequence
-<UNK>   Unknown character
-```
-
-These symbols will be included in the appropriate vocabulary representation.
-
-## Vocabulary source
-
-The vocabulary will be constructed using the training data rather than using the validation or test examples to define the character inventory.
-
----
-
-# Step 4 — Dataset and DataLoader
-
-## Objective
-
-Create a PyTorch dataset that converts each word pair into numerical sequences.
-
-For example:
-
-```text
-Romanized:
-ghar
-
-Target:
-घर
-```
-
-will become something conceptually similar to:
-
-```text
-Source:
-[ID(g), ID(h), ID(a), ID(r)]
-
-Target:
-[<SOS>, ID(घ), ID(र), <EOS>]
-```
-
-The actual integer values will depend on the vocabulary created in Step 3.
-
-## Why a Dataset is needed
-
-The dataset class will be responsible for:
-
-* reading the prepared examples
-* converting characters to IDs
-* adding required sequence markers
-* returning source and target sequences
-
-## Why a DataLoader is needed
-
-Training examples have different lengths. The DataLoader will allow us to organize examples into batches.
-
-Because sequence lengths can vary, we will later decide how padding and batch collation should be handled.
-
-The preprocessing code should not alter the original files in `data/raw/`.
-
----
-
-# Step 5 — Encoder
-
-## Objective
-
-Implement the first half of the sequence-to-sequence model.
-
-The encoder reads the Romanized input character by character.
-
-The basic flow is:
-
-```text
-Character ID
-     ↓
-Embedding
-     ↓
-RNN / LSTM / GRU
-     ↓
-Hidden state
-```
-
-For an input such as:
-
-```text
-ghar
-```
-
-the encoder processes:
-
-```text
-g → h → a → r
-```
-
-At every character, the recurrent cell updates its internal state.
-
-The final encoder state will contain information accumulated from the complete input sequence.
-
-Conceptually:
-
-```text
-g ──┐
-h ──┤
-a ──┤──> Encoder ──> final hidden state
-r ──┘
-```
-
-This final state will later be passed to the decoder as its starting state.
-
-## Configurability
-
-The encoder should not be written specifically for one recurrent cell.
-
-The implementation will eventually support:
-
-```text
-RNN
-LSTM
-GRU
-```
-
-The following settings should also be configurable:
-
-```text
-embedding dimension
-hidden-state dimension
-number of encoder layers
-```
-
-These settings will be controlled through the project configuration rather than being hard-coded inside the encoder.
-
----
-
-# Development Order
-
-The first five stages therefore form this pipeline:
-
-```text
-Project setup
-      ↓
-Dataset inspection
-      ↓
-Character vocabularies
-      ↓
-Dataset + DataLoader
-      ↓
-Encoder
-```
-
-We will not implement the decoder until the encoder and input pipeline have been verified.
-
----
-
-# Reference
-
-The project is based on the sequence-to-sequence requirements in the technical aptitude assignment and the PyTorch sequence-to-sequence tutorial supplied as a reference for the assignment.
-
-The implementation and documentation in this repository will be written specifically for this project rather than copied from the reference implementation.
-
