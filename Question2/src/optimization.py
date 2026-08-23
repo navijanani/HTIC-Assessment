@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import numpy as np
 from scipy.optimize import minimize
+from scipy.spatial.transform import Rotation
 
 from .distortion_model import project_points
 
@@ -215,6 +216,86 @@ def initialize_theta(
 	)
 
 
+def initialize_theta_from_homography(
+	world_points: np.ndarray,
+	observed_points: np.ndarray,
+	homography: np.ndarray,
+	image_size: tuple[int, int],
+) -> np.ndarray:
+	"""Use the RANSAC plane model to initialize pose instead of identity pose."""
+	world = _array(world_points, 3, "world_points")
+	observed = _array(observed_points, 2, "observed_points")
+	if len(world) != len(observed) or len(world) < 4:
+		raise ValueError("at least four matched points are required")
+	width, height = image_size
+	if width <= 0 or height <= 0:
+		raise ValueError("image_size must be positive")
+	model = np.asarray(homography, dtype=float)
+	if model.shape != (3, 3) or not np.all(np.isfinite(model)):
+		raise ValueError("homography must be a finite 3x3 matrix")
+
+	focal = float(max(width, height))
+	intrinsic = np.array(
+		[[focal, 0.0, width / 2.0], [0.0, focal, height / 2.0], [0.0, 0.0, 1.0]]
+	)
+	normalized = np.linalg.solve(intrinsic, model)
+	scale = 2.0 / (np.linalg.norm(normalized[:, 0]) + np.linalg.norm(normalized[:, 1]))
+	r1 = scale * normalized[:, 0]
+	r2 = scale * normalized[:, 1]
+	r3 = np.cross(r1, r2)
+	rotation_approx = np.column_stack((r1, r2, r3))
+	left, _, right = np.linalg.svd(rotation_approx)
+	rotation_matrix = left @ right
+	if np.linalg.det(rotation_matrix) < 0:
+		left[:, -1] *= -1.0
+		rotation_matrix = left @ right
+	rotation_vector = Rotation.from_matrix(rotation_matrix).as_rotvec()
+	translation = scale * normalized[:, 2]
+	if translation[2] <= 0:
+		rotation_matrix = -rotation_matrix
+		rotation_vector = Rotation.from_matrix(rotation_matrix).as_rotvec()
+		translation = -translation
+	return np.array(
+		[
+			focal,
+			focal,
+			width / 2.0,
+			height / 2.0,
+			0.0,
+			0.0,
+			*rotation_vector,
+			*translation,
+		],
+		dtype=float,
+	)
+
+
+def _validate_candidate(
+	theta: np.ndarray,
+	world_points: np.ndarray,
+	image_size: tuple[int, int],
+) -> None:
+	from .distortion_model import world_to_camera
+
+	intrinsic, rotation, translation, k1, k2 = unpack_theta(theta)
+	width, height = image_size
+	if not (0.0 <= intrinsic[0, 2] <= width and 0.0 <= intrinsic[1, 2] <= height):
+		raise ValueError("principal point is outside the image")
+	camera_points = world_to_camera(world_points, rotation, translation)
+	if np.any(camera_points[:, 2] <= 0):
+		raise ValueError("candidate has non-positive camera depth")
+	normalized = camera_points[:, :2] / camera_points[:, 2, None]
+	radius_squared = np.sum(normalized**2, axis=1)
+	distortion_scale = 1.0 + k1 * radius_squared + k2 * radius_squared**2
+	if not np.all(np.isfinite(distortion_scale)) or np.any(np.abs(distortion_scale) > 2.0):
+		raise ValueError("candidate has unreasonable radial distortion scale")
+	predicted = project_points(world_points, intrinsic, rotation, translation, k1, k2)
+	if np.any(predicted[:, 0] < -0.1 * width) or np.any(predicted[:, 0] > 1.1 * width):
+		raise ValueError("candidate projects points outside the image domain")
+	if np.any(predicted[:, 1] < -0.1 * height) or np.any(predicted[:, 1] > 1.1 * height):
+		raise ValueError("candidate projects points outside the image domain")
+
+
 def optimize_parameters(
 	world_points: np.ndarray,
 	observed_points: np.ndarray,
@@ -222,28 +303,64 @@ def optimize_parameters(
 	delta: float = 3.0,
 	max_iterations: int = 1000,
 	image_size: tuple[int, int] | None = None,
+	homography: np.ndarray | None = None,
 ) -> tuple[np.ndarray, object, float, float]:
 	"""Minimize the existing robust cost from RANSAC inlier correspondences."""
 	world = _array(world_points, 3, "world_points")
 	observed = _array(observed_points, 2, "observed_points")
 	if len(world) != len(observed) or len(world) < 4:
 		raise ValueError("at least four matched inlier points are required")
-	initial = initialize_theta(world, observed, image_size) if initial_theta is None else np.asarray(initial_theta, dtype=float).reshape(-1)
+	if initial_theta is None:
+		if homography is not None and image_size is not None:
+			initial = initialize_theta_from_homography(world, observed, homography, image_size)
+		else:
+			initial = initialize_theta(world, observed, image_size)
+	else:
+		initial = np.asarray(initial_theta, dtype=float).reshape(-1)
 	if initial.shape != (12,) or not np.all(np.isfinite(initial)):
 		raise ValueError("initial_theta must be a finite vector with 12 values")
 	initial_cost = cost_from_theta(initial, world, observed, delta)
+	invalid_cost = 1e100
+	if image_size is None:
+		image_width = max(float(np.ptp(observed[:, 0])), 1.0)
+		image_height = max(float(np.ptp(observed[:, 1])), 1.0)
+	else:
+		image_width, image_height = map(float, image_size)
+	world_scale = max(float(np.ptp(world[:, :2])), 1.0)
+	image_scale = max(image_width, image_height)
+	parameter_bounds = [
+		(0.25 * image_scale, 4.0 * image_scale),
+		(0.25 * image_scale, 4.0 * image_scale),
+		(0.0, image_width),
+		(0.0, image_height),
+		(-0.1, 0.1),
+		(-0.1, 0.1),
+		(-np.pi, np.pi),
+		(-np.pi, np.pi),
+		(-np.pi, np.pi),
+		(-100.0 * world_scale, 100.0 * world_scale),
+		(-100.0 * world_scale, 100.0 * world_scale),
+		(0.1, 100.0 * world_scale),
+	]
+	if np.any(initial < np.array([bound[0] for bound in parameter_bounds])) or np.any(
+		initial > np.array([bound[1] for bound in parameter_bounds])
+	):
+		raise ValueError("initial_theta lies outside the physically safe parameter bounds")
+	_validate_candidate(initial, world, (int(image_width), int(image_height)))
 
 	def objective(theta: np.ndarray) -> float:
 		try:
+			_validate_candidate(theta, world, (int(image_width), int(image_height)))
 			return cost_from_theta(theta, world, observed, delta)
 		except (ValueError, FloatingPointError):
-			return np.finfo(float).max / 1000.0
+			return invalid_cost
 
 	result = minimize(
 		objective,
 		initial,
-		method="Powell",
-		options={"maxiter": max_iterations, "xtol": 1e-8, "ftol": 1e-8},
+		method="L-BFGS-B",
+		bounds=parameter_bounds,
+		options={"maxiter": max_iterations, "ftol": 1e-12, "gtol": 1e-8},
 	)
 	final_cost = objective(result.x)
 	return result.x, result, float(initial_cost), float(final_cost)

@@ -66,8 +66,9 @@ def undistort_grid_corners(
 
 
 def undistort_image(
-	image: np.ndarray, intrinsic_matrix: np.ndarray, k1: float, k2: float
-) -> np.ndarray:
+	image: np.ndarray, intrinsic_matrix: np.ndarray, k1: float, k2: float,
+	return_diagnostics: bool = False,
+) -> np.ndarray | tuple[np.ndarray, dict[str, float]]:
 	"""Remap pixels with the supplied model; no parameters are estimated."""
 	import cv2
 
@@ -81,7 +82,36 @@ def undistort_image(
 		intrinsic, distortion, None, intrinsic,
 		(image.shape[1], image.shape[0]), cv2.CV_32FC1
 	)
-	return cv2.remap(image, map_x, map_y, interpolation=cv2.INTER_LINEAR)
+	finite = np.isfinite(map_x) & np.isfinite(map_y)
+	inside = (
+		finite
+		& (map_x >= 0)
+		& (map_x < image.shape[1])
+		& (map_y >= 0)
+		& (map_y < image.shape[0])
+	)
+	print(f"Intrinsic matrix:\n{intrinsic}")
+	print(f"fx={intrinsic[0, 0]:.6f}, fy={intrinsic[1, 1]:.6f}, cx={intrinsic[0, 2]:.6f}, cy={intrinsic[1, 2]:.6f}")
+	print(f"k1={k1:.9f}, k2={k2:.9f}")
+	print(f"map_x range: {np.nanmin(map_x):.6f} to {np.nanmax(map_x):.6f}")
+	print(f"map_y range: {np.nanmin(map_y):.6f} to {np.nanmax(map_y):.6f}")
+	print(f"Finite map coordinates: {100.0 * finite.mean():.4f}%")
+	print(f"Map coordinates inside source image: {100.0 * inside.mean():.4f}%")
+	corrected = cv2.remap(image, map_x, map_y, interpolation=cv2.INTER_LINEAR)
+	finite_pixels = corrected[np.isfinite(corrected)]
+	non_black = np.any(corrected != 0, axis=2) if corrected.ndim == 3 else corrected != 0
+	diagnostics = {
+		"map_x_min": float(np.nanmin(map_x)), "map_x_max": float(np.nanmax(map_x)),
+		"map_y_min": float(np.nanmin(map_y)), "map_y_max": float(np.nanmax(map_y)),
+		"finite_map_percentage": float(100.0 * finite.mean()),
+		"inside_source_percentage": float(100.0 * inside.mean()),
+		"corrected_min": float(np.min(finite_pixels)), "corrected_max": float(np.max(finite_pixels)),
+		"corrected_mean": float(np.mean(finite_pixels)),
+		"non_black_percentage": float(100.0 * non_black.mean()),
+	}
+	print(f"Corrected image min/max/mean: {diagnostics['corrected_min']:.6f}/{diagnostics['corrected_max']:.6f}/{diagnostics['corrected_mean']:.6f}")
+	print(f"Corrected image non-black pixels: {diagnostics['non_black_percentage']:.4f}%")
+	return (corrected, diagnostics) if return_diagnostics else corrected
 
 
 def draw_grid_visualization(
@@ -147,7 +177,9 @@ def run_undistortion(
 
 	intrinsic, _, _, k1, k2 = unpack_theta(load_theta(theta_path))
 	corrected_points = undistort_grid_corners(image_points, intrinsic, k1, k2)
-	corrected_image = undistort_image(image, intrinsic, k1, k2)
+	corrected_image, image_diagnostics = undistort_image(
+		image, intrinsic, k1, k2, return_diagnostics=True
+	)
 	output_dir.mkdir(parents=True, exist_ok=True)
 	image_output = output_dir / "grid_image_undistorted.png"
 	overlay_output = output_dir / "undistorted_grid_visualization.png"
@@ -159,6 +191,7 @@ def run_undistortion(
 		"undistorted_dimensions": [int(corrected_image.shape[1]), int(corrected_image.shape[0])],
 		"valid_grid_corners": len(image_points),
 		"k1": float(k1), "k2": float(k2), "success": True,
+		**image_diagnostics,
 		"undistorted_image": str(image_output), "visualization": str(overlay_output),
 	}
 	(output_dir / "undistortion_report.json").write_text(json.dumps(report, indent=2), encoding="utf-8")

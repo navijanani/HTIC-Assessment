@@ -1,0 +1,20 @@
+{
+  "initial_robust_cost": 777.9641910068126,
+  "final_robust_cost": 777.9641910068126,
+  "optimization_success": true,
+  "message": "CONVERGENCE: RELATIVE REDUCTION OF F <= FACTR*EPSMCH",
+  "theta": [
+    1448.0,
+    1448.0,
+    724.0,
+    543.0,
+    0.0,
+    0.0,
+    0.004545739785002408,
+    0.013353601240505424,
+    3.121385411105187,
+    4.3881544202022775,
+    2.7581161207787295,
+    13.129395631789475
+  ]
+}

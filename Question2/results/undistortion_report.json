@@ -1,0 +1,26 @@
+{
+  "original_dimensions": [
+    1448,
+    1086
+  ],
+  "undistorted_dimensions": [
+    1448,
+    1086
+  ],
+  "valid_grid_corners": 70,
+  "k1": 0.0,
+  "k2": 0.0,
+  "success": true,
+  "map_x_min": 0.0,
+  "map_x_max": 1447.0,
+  "map_y_min": 0.0,
+  "map_y_max": 1085.0,
+  "finite_map_percentage": 100.0,
+  "inside_source_percentage": 100.0,
+  "corrected_min": 0.0,
+  "corrected_max": 255.0,
+  "corrected_mean": 128.38566181333496,
+  "non_black_percentage": 100.0,
+  "undistorted_image": "results/grid_image_undistorted.png",
+  "visualization": "results/undistorted_grid_visualization.png"
+}

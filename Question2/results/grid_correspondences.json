@@ -1,0 +1,713 @@
+{
+  "image": "data/raw/grid_image.jpeg",
+  "image_width": 1448,
+  "image_height": 1086,
+  "pattern_columns": 10,
+  "pattern_rows": 7,
+  "grid_spacing": 1.0,
+  "detection_method": "findChessboardCorners",
+  "detected_corners": 70,
+  "valid_correspondences": 70,
+  "correspondences": [
+    {
+      "row": 0,
+      "column": 0,
+      "u": 1180.1763916015625,
+      "v": 826.99755859375,
+      "X": 0.0,
+      "Y": 0.0,
+      "Z": 0.0,
+      "ordering": "findChessboardCorners"
+    },
+    {
+      "row": 0,
+      "column": 1,
+      "u": 1086.5345458984375,
+      "v": 836.3936767578125,
+      "X": 1.0,
+      "Y": 0.0,
+      "Z": 0.0,
+      "ordering": "findChessboardCorners"
+    },
+    {
+      "row": 0,
+      "column": 2,
+      "u": 987.0884399414062,
+      "v": 844.7803955078125,
+      "X": 2.0,
+      "Y": 0.0,
+      "Z": 0.0,
+      "ordering": "findChessboardCorners"
+    },
+    {
+      "row": 0,
+      "column": 3,
+      "u": 882.4978637695312,
+      "v": 851.4883422851562,
+      "X": 3.0,
+      "Y": 0.0,
+      "Z": 0.0,
+      "ordering": "findChessboardCorners"
+    },
+    {
+      "row": 0,
+      "column": 4,
+      "u": 774.5795288085938,
+      "v": 856.2710571289062,
+      "X": 4.0,
+      "Y": 0.0,
+      "Z": 0.0,
+      "ordering": "findChessboardCorners"
+    },
+    {
+      "row": 0,
+      "column": 5,
+      "u": 665.5708618164062,
+      "v": 858.7025756835938,
+      "X": 5.0,
+      "Y": 0.0,
+      "Z": 0.0,
+      "ordering": "findChessboardCorners"
+    },
+    {
+      "row": 0,
+      "column": 6,
+      "u": 557.9908447265625,
+      "v": 858.6126708984375,
+      "X": 6.0,
+      "Y": 0.0,
+      "Z": 0.0,
+      "ordering": "findChessboardCorners"
+    },
+    {
+      "row": 0,
+      "column": 7,
+      "u": 454.2542419433594,
+      "v": 856.5216674804688,
+      "X": 7.0,
+      "Y": 0.0,
+      "Z": 0.0,
+      "ordering": "findChessboardCorners"
+    },
+    {
+      "row": 0,
+      "column": 8,
+      "u": 355.17266845703125,
+      "v": 852.2044677734375,
+      "X": 8.0,
+      "Y": 0.0,
+      "Z": 0.0,
+      "ordering": "findChessboardCorners"
+    },
+    {
+      "row": 0,
+      "column": 9,
+      "u": 261.9080505371094,
+      "v": 846.7906494140625,
+      "X": 9.0,
+      "Y": 0.0,
+      "Z": 0.0,
+      "ordering": "findChessboardCorners"
+    },
+    {
+      "row": 1,
+      "column": 0,
+      "u": 1181.37158203125,
+      "v": 722.9189453125,
+      "X": 0.0,
+      "Y": 1.0,
+      "Z": 0.0,
+      "ordering": "findChessboardCorners"
+    },
+    {
+      "row": 1,
+      "column": 1,
+      "u": 1087.6099853515625,
+      "v": 730.2546997070312,
+      "X": 1.0,
+      "Y": 1.0,
+      "Z": 0.0,
+      "ordering": "findChessboardCorners"
+    },
+    {
+      "row": 1,
+      "column": 2,
+      "u": 987.2742309570312,
+      "v": 736.5916137695312,
+      "X": 2.0,
+      "Y": 1.0,
+      "Z": 0.0,
+      "ordering": "findChessboardCorners"
+    },
+    {
+      "row": 1,
+      "column": 3,
+      "u": 881.7160034179688,
+      "v": 741.8466796875,
+      "X": 3.0,
+      "Y": 1.0,
+      "Z": 0.0,
+      "ordering": "findChessboardCorners"
+    },
+    {
+      "row": 1,
+      "column": 4,
+      "u": 772.5928955078125,
+      "v": 745.7300415039062,
+      "X": 4.0,
+      "Y": 1.0,
+      "Z": 0.0,
+      "ordering": "findChessboardCorners"
+    },
+    {
+      "row": 1,
+      "column": 5,
+      "u": 662.6541137695312,
+      "v": 748.353759765625,
+      "X": 5.0,
+      "Y": 1.0,
+      "Z": 0.0,
+      "ordering": "findChessboardCorners"
+    },
+    {
+      "row": 1,
+      "column": 6,
+      "u": 554.1484985351562,
+      "v": 749.3282470703125,
+      "X": 6.0,
+      "Y": 1.0,
+      "Z": 0.0,
+      "ordering": "findChessboardCorners"
+    },
+    {
+      "row": 1,
+      "column": 7,
+      "u": 449.29779052734375,
+      "v": 748.230224609375,
+      "X": 7.0,
+      "Y": 1.0,
+      "Z": 0.0,
+      "ordering": "findChessboardCorners"
+    },
+    {
+      "row": 1,
+      "column": 8,
+      "u": 349.4556579589844,
+      "v": 746.0717163085938,
+      "X": 8.0,
+      "Y": 1.0,
+      "Z": 0.0,
+      "ordering": "findChessboardCorners"
+    },
+    {
+      "row": 1,
+      "column": 9,
+      "u": 256.4552001953125,
+      "v": 742.68994140625,
+      "X": 9.0,
+      "Y": 1.0,
+      "Z": 0.0,
+      "ordering": "findChessboardCorners"
+    },
+    {
+      "row": 2,
+      "column": 0,
+      "u": 1180.4937744140625,
+      "v": 617.9053344726562,
+      "X": 0.0,
+      "Y": 2.0,
+      "Z": 0.0,
+      "ordering": "findChessboardCorners"
+    },
+    {
+      "row": 2,
+      "column": 1,
+      "u": 1086.4320068359375,
+      "v": 622.418212890625,
+      "X": 1.0,
+      "Y": 2.0,
+      "Z": 0.0,
+      "ordering": "findChessboardCorners"
+    },
+    {
+      "row": 2,
+      "column": 2,
+      "u": 986.1203002929688,
+      "v": 626.4634399414062,
+      "X": 2.0,
+      "Y": 2.0,
+      "Z": 0.0,
+      "ordering": "findChessboardCorners"
+    },
+    {
+      "row": 2,
+      "column": 3,
+      "u": 879.9480590820312,
+      "v": 630.3834228515625,
+      "X": 3.0,
+      "Y": 2.0,
+      "Z": 0.0,
+      "ordering": "findChessboardCorners"
+    },
+    {
+      "row": 2,
+      "column": 4,
+      "u": 770.5847778320312,
+      "v": 633.5864868164062,
+      "X": 4.0,
+      "Y": 2.0,
+      "Z": 0.0,
+      "ordering": "findChessboardCorners"
+    },
+    {
+      "row": 2,
+      "column": 5,
+      "u": 660.1783447265625,
+      "v": 635.8685913085938,
+      "X": 5.0,
+      "Y": 2.0,
+      "Z": 0.0,
+      "ordering": "findChessboardCorners"
+    },
+    {
+      "row": 2,
+      "column": 6,
+      "u": 550.7938842773438,
+      "v": 637.3565673828125,
+      "X": 6.0,
+      "Y": 2.0,
+      "Z": 0.0,
+      "ordering": "findChessboardCorners"
+    },
+    {
+      "row": 2,
+      "column": 7,
+      "u": 445.5560302734375,
+      "v": 638.0690307617188,
+      "X": 7.0,
+      "Y": 2.0,
+      "Z": 0.0,
+      "ordering": "findChessboardCorners"
+    },
+    {
+      "row": 2,
+      "column": 8,
+      "u": 345.5895080566406,
+      "v": 638.1646118164062,
+      "X": 8.0,
+      "Y": 2.0,
+      "Z": 0.0,
+      "ordering": "findChessboardCorners"
+    },
+    {
+      "row": 2,
+      "column": 9,
+      "u": 252.48912048339844,
+      "v": 637.6187133789062,
+      "X": 9.0,
+      "Y": 2.0,
+      "Z": 0.0,
+      "ordering": "findChessboardCorners"
+    },
+    {
+      "row": 3,
+      "column": 0,
+      "u": 1177.52392578125,
+      "v": 511.6099548339844,
+      "X": 0.0,
+      "Y": 3.0,
+      "Z": 0.0,
+      "ordering": "findChessboardCorners"
+    },
+    {
+      "row": 3,
+      "column": 1,
+      "u": 1083.5576171875,
+      "v": 513.4129028320312,
+      "X": 1.0,
+      "Y": 3.0,
+      "Z": 0.0,
+      "ordering": "findChessboardCorners"
+    },
+    {
+      "row": 3,
+      "column": 2,
+      "u": 983.3432006835938,
+      "v": 515.4896240234375,
+      "X": 2.0,
+      "Y": 3.0,
+      "Z": 0.0,
+      "ordering": "findChessboardCorners"
+    },
+    {
+      "row": 3,
+      "column": 3,
+      "u": 877.39697265625,
+      "v": 517.57958984375,
+      "X": 3.0,
+      "Y": 3.0,
+      "Z": 0.0,
+      "ordering": "findChessboardCorners"
+    },
+    {
+      "row": 3,
+      "column": 4,
+      "u": 768.3348388671875,
+      "v": 519.63427734375,
+      "X": 4.0,
+      "Y": 3.0,
+      "Z": 0.0,
+      "ordering": "findChessboardCorners"
+    },
+    {
+      "row": 3,
+      "column": 5,
+      "u": 657.8103637695312,
+      "v": 521.9339599609375,
+      "X": 5.0,
+      "Y": 3.0,
+      "Z": 0.0,
+      "ordering": "findChessboardCorners"
+    },
+    {
+      "row": 3,
+      "column": 6,
+      "u": 548.9420166015625,
+      "v": 524.1055908203125,
+      "X": 6.0,
+      "Y": 3.0,
+      "Z": 0.0,
+      "ordering": "findChessboardCorners"
+    },
+    {
+      "row": 3,
+      "column": 7,
+      "u": 443.6681213378906,
+      "v": 526.1746826171875,
+      "X": 7.0,
+      "Y": 3.0,
+      "Z": 0.0,
+      "ordering": "findChessboardCorners"
+    },
+    {
+      "row": 3,
+      "column": 8,
+      "u": 343.96783447265625,
+      "v": 528.446044921875,
+      "X": 8.0,
+      "Y": 3.0,
+      "Z": 0.0,
+      "ordering": "findChessboardCorners"
+    },
+    {
+      "row": 3,
+      "column": 9,
+      "u": 251.16702270507812,
+      "v": 530.524658203125,
+      "X": 9.0,
+      "Y": 3.0,
+      "Z": 0.0,
+      "ordering": "findChessboardCorners"
+    },
+    {
+      "row": 4,
+      "column": 0,
+      "u": 1172.2864990234375,
+      "v": 406.59881591796875,
+      "X": 0.0,
+      "Y": 4.0,
+      "Z": 0.0,
+      "ordering": "findChessboardCorners"
+    },
+    {
+      "row": 4,
+      "column": 1,
+      "u": 1078.8394775390625,
+      "v": 405.55419921875,
+      "X": 1.0,
+      "Y": 4.0,
+      "Z": 0.0,
+      "ordering": "findChessboardCorners"
+    },
+    {
+      "row": 4,
+      "column": 2,
+      "u": 979.0057373046875,
+      "v": 405.2846374511719,
+      "X": 2.0,
+      "Y": 4.0,
+      "Z": 0.0,
+      "ordering": "findChessboardCorners"
+    },
+    {
+      "row": 4,
+      "column": 3,
+      "u": 873.9102172851562,
+      "v": 405.4764404296875,
+      "X": 3.0,
+      "Y": 4.0,
+      "Z": 0.0,
+      "ordering": "findChessboardCorners"
+    },
+    {
+      "row": 4,
+      "column": 4,
+      "u": 765.5838623046875,
+      "v": 406.5616455078125,
+      "X": 4.0,
+      "Y": 4.0,
+      "Z": 0.0,
+      "ordering": "findChessboardCorners"
+    },
+    {
+      "row": 4,
+      "column": 5,
+      "u": 656.3766479492188,
+      "v": 408.6023254394531,
+      "X": 5.0,
+      "Y": 4.0,
+      "Z": 0.0,
+      "ordering": "findChessboardCorners"
+    },
+    {
+      "row": 4,
+      "column": 6,
+      "u": 548.0606689453125,
+      "v": 411.3085632324219,
+      "X": 6.0,
+      "Y": 4.0,
+      "Z": 0.0,
+      "ordering": "findChessboardCorners"
+    },
+    {
+      "row": 4,
+      "column": 7,
+      "u": 443.8013610839844,
+      "v": 415.0335998535156,
+      "X": 7.0,
+      "Y": 4.0,
+      "Z": 0.0,
+      "ordering": "findChessboardCorners"
+    },
+    {
+      "row": 4,
+      "column": 8,
+      "u": 344.55621337890625,
+      "v": 419.35113525390625,
+      "X": 8.0,
+      "Y": 4.0,
+      "Z": 0.0,
+      "ordering": "findChessboardCorners"
+    },
+    {
+      "row": 4,
+      "column": 9,
+      "u": 252.433349609375,
+      "v": 424.3864440917969,
+      "X": 9.0,
+      "Y": 4.0,
+      "Z": 0.0,
+      "ordering": "findChessboardCorners"
+    },
+    {
+      "row": 5,
+      "column": 0,
+      "u": 1164.6263427734375,
+      "v": 303.6470031738281,
+      "X": 0.0,
+      "Y": 5.0,
+      "Z": 0.0,
+      "ordering": "findChessboardCorners"
+    },
+    {
+      "row": 5,
+      "column": 1,
+      "u": 1072.3878173828125,
+      "v": 300.29022216796875,
+      "X": 1.0,
+      "Y": 5.0,
+      "Z": 0.0,
+      "ordering": "findChessboardCorners"
+    },
+    {
+      "row": 5,
+      "column": 2,
+      "u": 973.3262329101562,
+      "v": 297.6866149902344,
+      "X": 2.0,
+      "Y": 5.0,
+      "Z": 0.0,
+      "ordering": "findChessboardCorners"
+    },
+    {
+      "row": 5,
+      "column": 3,
+      "u": 869.7001953125,
+      "v": 296.34637451171875,
+      "X": 3.0,
+      "Y": 5.0,
+      "Z": 0.0,
+      "ordering": "findChessboardCorners"
+    },
+    {
+      "row": 5,
+      "column": 4,
+      "u": 763.0896606445312,
+      "v": 296.5146484375,
+      "X": 4.0,
+      "Y": 5.0,
+      "Z": 0.0,
+      "ordering": "findChessboardCorners"
+    },
+    {
+      "row": 5,
+      "column": 5,
+      "u": 654.9664916992188,
+      "v": 298.3352355957031,
+      "X": 5.0,
+      "Y": 5.0,
+      "Z": 0.0,
+      "ordering": "findChessboardCorners"
+    },
+    {
+      "row": 5,
+      "column": 6,
+      "u": 548.4759521484375,
+      "v": 301.5992126464844,
+      "X": 6.0,
+      "Y": 5.0,
+      "Z": 0.0,
+      "ordering": "findChessboardCorners"
+    },
+    {
+      "row": 5,
+      "column": 7,
+      "u": 445.3692321777344,
+      "v": 306.6148376464844,
+      "X": 7.0,
+      "Y": 5.0,
+      "Z": 0.0,
+      "ordering": "findChessboardCorners"
+    },
+    {
+      "row": 5,
+      "column": 8,
+      "u": 347.353515625,
+      "v": 313.08966064453125,
+      "X": 8.0,
+      "Y": 5.0,
+      "Z": 0.0,
+      "ordering": "findChessboardCorners"
+    },
+    {
+      "row": 5,
+      "column": 9,
+      "u": 255.97354125976562,
+      "v": 320.301025390625,
+      "X": 9.0,
+      "Y": 5.0,
+      "Z": 0.0,
+      "ordering": "findChessboardCorners"
+    },
+    {
+      "row": 6,
+      "column": 0,
+      "u": 1155.7921142578125,
+      "v": 204.12359619140625,
+      "X": 0.0,
+      "Y": 6.0,
+      "Z": 0.0,
+      "ordering": "findChessboardCorners"
+    },
+    {
+      "row": 6,
+      "column": 1,
+      "u": 1064.3682861328125,
+      "v": 198.37954711914062,
+      "X": 1.0,
+      "Y": 6.0,
+      "Z": 0.0,
+      "ordering": "findChessboardCorners"
+    },
+    {
+      "row": 6,
+      "column": 2,
+      "u": 966.651123046875,
+      "v": 193.94772338867188,
+      "X": 2.0,
+      "Y": 6.0,
+      "Z": 0.0,
+      "ordering": "findChessboardCorners"
+    },
+    {
+      "row": 6,
+      "column": 3,
+      "u": 864.892578125,
+      "v": 190.85198974609375,
+      "X": 3.0,
+      "Y": 6.0,
+      "Z": 0.0,
+      "ordering": "findChessboardCorners"
+    },
+    {
+      "row": 6,
+      "column": 4,
+      "u": 760.169189453125,
+      "v": 190.02996826171875,
+      "X": 4.0,
+      "Y": 6.0,
+      "Z": 0.0,
+      "ordering": "findChessboardCorners"
+    },
+    {
+      "row": 6,
+      "column": 5,
+      "u": 654.442138671875,
+      "v": 191.80995178222656,
+      "X": 5.0,
+      "Y": 6.0,
+      "Z": 0.0,
+      "ordering": "findChessboardCorners"
+    },
+    {
+      "row": 6,
+      "column": 6,
+      "u": 549.7726440429688,
+      "v": 196.1517333984375,
+      "X": 6.0,
+      "Y": 6.0,
+      "Z": 0.0,
+      "ordering": "findChessboardCorners"
+    },
+    {
+      "row": 6,
+      "column": 7,
+      "u": 448.5507507324219,
+      "v": 202.305908203125,
+      "X": 7.0,
+      "Y": 6.0,
+      "Z": 0.0,
+      "ordering": "findChessboardCorners"
+    },
+    {
+      "row": 6,
+      "column": 8,
+      "u": 351.70819091796875,
+      "v": 210.6063995361328,
+      "X": 8.0,
+      "Y": 6.0,
+      "Z": 0.0,
+      "ordering": "findChessboardCorners"
+    },
+    {
+      "row": 6,
+      "column": 9,
+      "u": 261.48565673828125,
+      "v": 220.09051513671875,
+      "X": 9.0,
+      "Y": 6.0,
+      "Z": 0.0,
+      "ordering": "findChessboardCorners"
+    }
+  ]
+}
