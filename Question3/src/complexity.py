@@ -22,12 +22,9 @@ def recurrent_mac_count(cell_type: str, e: int, h: int, t: int, v: int) -> int:
     return recurrent_macs + output_projection_macs
 
 
-def parameter_count(gate_count: int, source_vocab_size: int, target_vocab_size: int, e: int, h: int) -> int:
-    """Count embedding, recurrent, and output-layer parameters."""
-    embedding_parameters = source_vocab_size * e
-    recurrent_parameters = 2 * gate_count * (e * h + h * h + h)
-    output_parameters = h * target_vocab_size + target_vocab_size
-    return embedding_parameters + recurrent_parameters + output_parameters
+def theoretical_parameter_count(gate_count: int, v: int, e: int, h: int) -> int:
+    """Count parameters with the assignment's single vocabulary size."""
+    return v * e + 2 * gate_count * (e * h + h * h + h) + h * v + v
 
 
 def verify_model_parameters(source_vocab_size: int = 30, target_vocab_size: int = 68) -> None:
@@ -56,9 +53,8 @@ def verify_model_parameters(source_vocab_size: int = 30, target_vocab_size: int 
                 target_sos_id=1,
             )
             actual_count = sum(parameter.numel() for parameter in model.parameters())
-            theoretical_count = parameter_count(
+            theoretical_count = theoretical_parameter_count(
                 CELL_GATE_COUNTS[cell_type],
-                source_vocab_size,
                 target_vocab_size,
                 test_config.embedding_dim,
                 test_config.hidden_dim,
@@ -102,13 +98,14 @@ def analyze_complexity() -> None:
     print("Parameter convention: trainable weights and biases only.")
     print("The source embedding uses source vocabulary size 30; the decoder output layer uses target vocabulary size 68.")
     print("Assignment formula: P = V*E + 2*G*(E*H + H*H + H) + H*V + V")
-    print("For separate project vocabularies: P = Vs*E + 2*G*(E*H + H*H + H) + H*Vt + Vt")
-    print(f"Project values: Vs={source_vocab_size}, Vt={target_vocab_size}, E={e}, H={h}")
+    print(f"Assignment values: V={target_vocab_size}, E={e}, H={h}")
+    print("Actual project uses separate source and target embeddings: Vs*E + Vt*E + 2*G*(E*H + H*H + H) + H*Vt + Vt")
+    print(f"Actual project values: Vs={source_vocab_size}, Vt={target_vocab_size}, E={e}, H={h}")
 
     for cell_type, gate_count in CELL_GATE_COUNTS.items():
-        value = parameter_count(gate_count, source_vocab_size, target_vocab_size, e, h)
+        value = theoretical_parameter_count(gate_count, target_vocab_size, e, h)
         formula = (
-            f"{source_vocab_size}*{e} + 2*{gate_count}*({e}*{h} + {h}*{h} + {h}) "
+            f"{target_vocab_size}*{e} + 2*{gate_count}*({e}*{h} + {h}*{h} + {h}) "
             f"+ {h}*{target_vocab_size} + {target_vocab_size}"
         )
         print(f"{cell_type}: {formula} = {value:,} parameters")

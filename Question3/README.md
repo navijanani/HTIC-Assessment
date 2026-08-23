@@ -74,6 +74,23 @@ python3 -m src.evaluate
 
 Predictions are written to `results/predictions/test_predictions.csv`.
 
+The saved checkpoint produced the following test metrics:
+
+| Metric | Result |
+| --- | ---: |
+| Character-level accuracy | 0.6135 |
+| Exact word accuracy | 0.2532 (1037/4096) |
+
+Example predictions:
+
+| Romanized | Target | Prediction |
+| --- | --- | --- |
+| thermax | थरमैक्स | थेर्मैक्स |
+| sikhaaega | सिखाएगा | सिखाएगा |
+| learn | लर्न | लीररन |
+| twitters | ट्विटरर्स | ट्विटरर्स |
+| tirunelveli | तिरुनेलवेली | तिरुनेलवेली |
+
 ## Complexity Analysis
 
 `src/complexity.py` counts multiply-accumulate operations (MACs). The convention includes encoder and decoder recurrent matrix multiplications and the decoder output projection. It excludes embedding lookups, biases, activations, padding, and control flow.

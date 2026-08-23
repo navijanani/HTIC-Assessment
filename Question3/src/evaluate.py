@@ -104,8 +104,11 @@ def evaluate() -> None:
                 compared_characters += length
 
     accuracy = correct_characters / compared_characters if compared_characters else 0.0
+    exact_matches = sum(target == prediction for _, target, prediction in predictions)
+    exact_accuracy = exact_matches / len(predictions) if predictions else 0.0
     print(f"Test examples: {len(predictions)}")
     print(f"Character-level accuracy: {accuracy:.4f}")
+    print(f"Exact word accuracy: {exact_accuracy:.4f} ({exact_matches}/{len(predictions)})")
     print("Examples:")
     for source_text, target_text, prediction in predictions[:3]:
         print(f"  {source_text} -> target: {target_text} -> prediction: {prediction}")
